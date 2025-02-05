@@ -197,7 +197,7 @@ void Server::processCommand(Client* client, const char* message)
 					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 					return ;
 				}
-				if(client->isModerator() != true)
+				if(command.getChannelByName(*(it + 2))->checkClientIsModerator(client->getClientSock()) == false)
 				{
 					const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
 					send(client->getClientSock(), msg.c_str(), msg.size(), 0);
@@ -212,8 +212,8 @@ void Server::processCommand(Client* client, const char* message)
 					return;
 				}
 
-				invitedClient->setModerator(false);
 				command.getChannelByName(*(it + 2))->AddUser2Channel(invitedClient);
+				command.getChannelByName(*(it + 2))->addModerator(invitedClient);
 				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
 				command.sendData(invitedClient->getClientSock(), msg);
 
@@ -241,9 +241,8 @@ void Server::processCommand(Client* client, const char* message)
 				return ;
 			if(*(it + 2)->begin() == '#')
 			{
-				const std::string &msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + " Somthing is Wrong..";
-				// const std::string  &msg = RPL_KICKED(client->getUserName(), *(it + 1), client->getNickName());
-				// command.getChannelByName(*(it + 1))->sendToAll(msg);
+				const std::string  &msg = RPL_KICKED(client->getUserName(), *(it + 1), client->getNickName());
+				
 				command.sendData(client->getClientSock(), msg);
 				return;
 			}
@@ -264,17 +263,13 @@ void Server::processCommand(Client* client, const char* message)
 		}
 		if(equalStrings(*it, "PART") )
 		{
-			std::cout << "3\n";
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
 				return ;
-			std::cout << "4\n";
-
 			std::string m = " ";
 			if(it + 2 != vec.end())
 				m = getRangeAsString(vec, it + 2, vec.size(), " ");
 			else
 				m = "NO REASON INCLUDED... ";
-			std::cout << "5\n";
 			command.partCommand(client, *(it + 1), m);
 
 		}
@@ -290,12 +285,13 @@ void Server::processCommand(Client* client, const char* message)
 				return ;
 			}
 			std::vector<Client>* users = channel->getChannelClientsVector();
-			command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
+			// command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
+			command.rpl_list(client, channel); 
             for (std::vector<Client>::iterator it = users->begin(); it != users->end(); ++it)
             {
                 Client user = *it;
                 std::string msg;
-                if (user.isModerator())
+                if (channel->checkClientIsModerator(user.getClientSock()))
                     msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "@x", user.getRealName());
                 else
                     msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), user.getUserName(), user.getIpAddress(), "0.Matrix ", user.getNickName(), "x", user.getRealName());
@@ -357,7 +353,7 @@ void Server::processCommand(Client* client, const char* message)
 			{
 				if(command.getChannelByName(*(it + 1))->getTopicMode() == true)
 				{
-					if(!client->isModerator())
+					if(command.getChannelByName(*(it + 1))->checkClientIsModerator(client->getClientSock()))
 					{
 						const std::string &msg = ":IRC " + ERR_CHANOPRIVSNEEDED(client->getNickName(), *(it + 1));
 						send(client->getClientSock(), msg.c_str(), msg.size(), 0);
