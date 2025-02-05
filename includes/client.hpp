@@ -11,7 +11,7 @@
 #include <sstream>
 #include <unistd.h>
 
-
+// Class Command;
 class Client
 {
 public :
@@ -25,14 +25,14 @@ public :
 	void 			setClientSock(int fd);
 	void 			setIpAddress(const std::string& _ipAddres);
 	void 			setNickName(const std::string& value);
-	// void 			setModerator(bool val);
+	void 			setModerator(bool val);
 	void 			setUserName(const std::string& );
 	void 			setRealName(const std::string& value);
 	void 			setValid(bool );
 
 	bool			isEligible() const;
 	bool 			isEmptyName(const std::string& nick, const std::string& user) const;
-	// bool 			isModerator() const;
+	bool 			isModerator() const;
 	bool 			isValid() const;
 
 	std::string 	getIpAddress() const; 
@@ -43,7 +43,7 @@ public :
 	
 private :
 	bool valid;  //when entering correct passwd
-	// bool moderator; //when creator of channel or has been turned moderator
+	bool moderator; //when creator of channel or has been turned moderator
 	int clientSock;
 	std::string nickName;
 	std::string userName;

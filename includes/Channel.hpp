@@ -26,13 +26,9 @@ public :
 	void setTopicMode(const bool&);
 	void setTopic(const std::string & _topic);
 	void sendToAll(const std::string& msg);
-	void addModerator(const Client*);
-	void removeModerator(const Client *client);
-	void printOp();
 	// void printClient();
 
 	bool userExistInChannelBySock(const int&);
-	bool checkClientIsModerator(const int&);
 	bool channelIsFull();
 	bool userExistInChannelByName(const std::string &, const int&);
 	bool getInviteMode() const;
@@ -66,7 +62,7 @@ private :
 	std::string channelName;
 	std::string channelPasswd;
 	std::vector<Client> channelClients;     // Storing the clients joining a channel
-	std::vector<Client> operators;     // Storing the operators of a channel
+	std::vector<Client> operators;     // Storing the clients joining a channel
 	std::string topic;
 };
 

@@ -4,12 +4,12 @@
 #define BUFFER_SIZE 1024
 
 
-Client::Client() : valid(false), nickName("Guest"), userName("Guest")
+Client::Client() : valid(false), moderator(false), nickName("Guest"), userName("Guest")
 {
     this->realName = "realname";
 }
 
-Client::Client(const std::string& _userName, const std::string& _nickName) : valid(false), nickName(_nickName), userName(_userName)
+Client::Client(const std::string& _userName, const std::string& _nickName) : valid(false), moderator(false), nickName(_nickName), userName(_userName)
 {
     this->realName = "realname";
 }
@@ -75,16 +75,17 @@ std::string Client::getIpAddress() const
     return this->ipAddress;
 }
 
-// void Client::setModerator(bool val)
-// {
-//     this->moderator = val;
-// }
+void Client::setModerator(bool val)
+{
+    
+    this->moderator = val;
+}
 
 
-// bool Client::isModerator() const
-// {
-//     return this->moderator;
-// }
+bool Client::isModerator() const
+{
+    return this->moderator;
+}
 
 bool Client::isEmptyName(const std::string& nick, const std::string& user) const
 {
