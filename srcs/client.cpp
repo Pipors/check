@@ -75,17 +75,6 @@ std::string Client::getIpAddress() const
     return this->ipAddress;
 }
 
-// void Client::setModerator(bool val)
-// {
-//     this->moderator = val;
-// }
-
-
-// bool Client::isModerator() const
-// {
-//     return this->moderator;
-// }
-
 bool Client::isEmptyName(const std::string& nick, const std::string& user) const
 {
     if (nick.empty() || user.empty() || strncmp(nick.c_str(), "Guest", sizeof("Guest")) == 0 || strncmp(user.c_str(), "Guest", sizeof("Guest")) == 0)

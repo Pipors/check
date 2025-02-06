@@ -8,7 +8,6 @@ void Server::processCommand(Client* client, const char* message)
 	std::vector<std::string> vec(getWords_(msg));               // Splitting the message sent by client word by word
 	std::vector<std::string>::iterator it = vec.begin();        // Iterating through the vector containing the message  
 	std::cout << message;
-	// (void)client;
 
 
 	while ((it != vec.end()))
@@ -141,15 +140,14 @@ void Server::processCommand(Client* client, const char* message)
 		if (equalStrings(*it, "MODE") && client->isEligible())
 		{
 			const std::string& name = *(it + 1);
-			if ((it + 1) == vec.end())
+			if ((it + 1) == vec.end() || !command.channelExist(name))
 				return;
 
 			if (vec.size() == 2 && command.channelExist(name))
 			{
-				// command.rpl_list(client, command.getChannelByName(name)); 
 				const std::string& msg = ":IRC " + RPL_CHANNELMODEIS(client->getNickName(), name, command.getChannelByName(name)->getChannelMode());
            		send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-           		const std::string& msg1 = ":IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), 1998);
+           		const std::string& msg1 = ":IRC " + RPL_CREATIONTIME(client->getNickName(), *(it + 1), std::to_string(command.getChannelByName(name)->getCurrentTimestamp()));
            		send(client->getClientSock(), msg1.c_str(), msg1.size(), 0);
            		return;
 
@@ -166,21 +164,11 @@ void Server::processCommand(Client* client, const char* message)
 				command.modeCommand(client, *(it + 1), *(it + 2), *(it + 3));
 			else
 				command.modeCommand(client, *(it + 1), *(it + 2), "NULL");
-				// command.rpl_list(client, command.getChannelByName(name));
-
 			return;
 		}
 
 		if(equalStrings(*it, "INVITE") && client->isEligible())
 		{
-			// std::cout << *(it + 1) << "\n";
-			// std::cout << *(it + 2) << "\n";
-			// if (it != vec.end() && ((it + 1) == vec.end() || (it + 2) == vec.end()))
-			// {
-			// 	const std::string &msg = ":IRC " + ERR_NEEDMOREPARAMS(client->getNickName(), *(it));
-			// 	send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			// 	return ;
-			// }
 
 			if (emptyParam(vec, (it + 1), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)) 
 				|| emptyParam(vec, (it + 2), client->getClientSock(), ERR_NEEDMOREPARAMS(client->getNickName(), *it)))
@@ -213,15 +201,12 @@ void Server::processCommand(Client* client, const char* message)
 				}
 
 				command.getChannelByName(*(it + 2))->AddUser2Channel(invitedClient);
-				command.getChannelByName(*(it + 2))->addModerator(invitedClient);
 				const std::string& msg = command.standardMsg(client->getNickName(), client->getUserName(), client->getIpAddress()) + ".IP INVITE " + invitedClient->getNickName() + " " + command.getChannelByName(*(it + 2))->getChannelName() + "\r\n";
 				command.sendData(invitedClient->getClientSock(), msg);
 
 
 				const std::string& name = command.getChannelByName(*(it + 2))->getChannelName();
 				const std::string& ms = command.standardMsg(invitedClient->getNickName(), invitedClient->getUserName(), invitedClient->getIpAddress()) + " JOIN " + name + " * " + invitedClient->getRealName() + " " + RPL_WELCOME(invitedClient->getNickName(), "IRC");
-
-				// command.sendData(invitedClient->getClientSock(), ms);
 				command.getChannelByName(*(it + 2))->sendToAll(ms);
 				return;
 			}
@@ -285,7 +270,6 @@ void Server::processCommand(Client* client, const char* message)
 				return ;
 			}
 			std::vector<Client>* users = channel->getChannelClientsVector();
-			// command.rpl_list(client, command.getChannelByName(channel->getChannelName())); 
 			command.rpl_list(client, channel); 
             for (std::vector<Client>::iterator it = users->begin(); it != users->end(); ++it)
             {
@@ -299,27 +283,58 @@ void Server::processCommand(Client* client, const char* message)
             }
             std::string msg = ":" + this->serverName + RPL_ENDOFWHO(client->getNickName(),  channel->getChannelName());
             send(client->getClientSock(), msg.c_str(), msg.size(), 0);
-			// std::vector<Client>* vec = channel->getChannelClientsVector();
-			// for (std::vector<Client>::iterator it = vec->begin(); it != vec->end(); it++) 
-			// {
-            //     Client vec = *it;
-			// 	std::string msg;
-            //     if (it->isModerator())
-			// 	{
-			// 		 msg = ":"  + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), this->serverName, vec.getNickName(), "@x", vec.getRealName());
-			// 	}
-            //     else
-			// 	{
-			// 		msg = ":" + this->serverName + RPL_WHOREPLY(client->getNickName(), channel->getChannelName(), vec.getUserName(), vec.getIpAddress(), this->serverName, vec.getNickName(), "x", vec.getRealName());
-			// 	}
-            //     command.sendData(client->getClientSock(), msg.c_str());
-            // }
-			// std::string msg = ":IRC " + RPL_ENDOFWHO(client->getNickName(), channel->getChannelName());
-            // send(client->getClientSock(), msg.c_str(), msg.size(), 0);
 		}
-		if(equalStrings(*it, "BOT") )
+		if(equalStrings(*it, "BOT") && client->isEligible())
 		{
-			std::cout << "hello\n";
+			if(it + 1 == vec.end())
+			{
+				std::string msg = "Choose Between : FACTS( Enter 1 ) , AGE( Enter 2 ), INFOS( Enter 3 ).\r\n";
+				command.sendData(client->getClientSock(), msg);
+				return;
+			}
+
+
+
+
+			if(it + 1 != vec.end())
+			{
+				if(equalStrings(*(it + 1), "1"))
+					facts(client->getClientSock());
+				else if(equalStrings(*(it + 1), "2"))
+				{
+					std::string msg = "LIST OF CHANNELS IN THE SERVER :\n";
+					std::vector<Channel>::iterator chan = command.getChannelVector()->begin();
+					while (chan != command.getChannelVector()->end())
+					{
+						msg += chan->getChannelName() + "\n";
+						chan++;
+					}
+					command.sendData(client->getClientSock(), msg);
+					std::string msg1 = "LIST OF CLIENTS IN THE SERVER :\n";
+					std::vector<Client>::iterator it = clients.begin();
+					while (it != clients.end())
+					{
+						msg1 += it->getNickName() + "\n";
+						it++;
+					}
+					command.sendData(client->getClientSock(), msg1);
+					return;
+					
+				}
+				else if(equalStrings(*(it + 1), "3"))
+				{
+					if(it + 2 == vec.end() || it + 3 == vec.end() || it + 4 == vec.end())
+						command.sendData(client->getClientSock(), "PLEASE CORRECT SYNTAX (BOT 3 (day) (month) (year))");
+					else
+						ageCalculator(*(it + 2), *(it + 3), *(it + 4), client->getClientSock());
+				}
+				else 
+				std::string msg = "Incorrect choice please Choose Between : FACTS( Enter 1 ) , AGE( Enter 2 ), INFOS( Enter 3 ).\r\n";
+				command.sendData(client->getClientSock(), msg);
+				return;
+
+			}
+			return;
 		}
 		if(equalStrings(*it, "TOPIC") )
 		{
@@ -361,7 +376,6 @@ void Server::processCommand(Client* client, const char* message)
 					}
 				}
 					std::cout << "before EQual :" << (it + 2)->size() << std::endl;
-					// if(((it + 2)->substr(1)).empty())
 					if(equalStrings(*(it + 2), "::"))
 					{
 						(it + 2)->size();
@@ -385,8 +399,9 @@ void Server::processCommand(Client* client, const char* message)
 		}
 		if (*it == "QUIT" && *(it + 1) == ":Leaving")
 		{
-			command.removeClientFromAllChannels(client->getClientSock()); 
-			close(client->getClientSock());
+
+			command.removeClientFromAllChannels(client->getClientSock());
+			removeClientFromPollfd(client->getClientSock());
 			return;
 		}
 		it++;

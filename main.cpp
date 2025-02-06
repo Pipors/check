@@ -16,14 +16,14 @@ int main(int ac, const char **av)
     s >> nb;
     try
     {
-        // signal(SIGINT, Server::signalHandler);
-        // signal(SIGQUIT, Server::signalHandler);
+ 
+        signal(SIGQUIT, Server::signalHandler);
+        signal(SIGINT, Server::signalHandler);
         server.runningServer(nb, av[2]);
     }
     catch(const std::exception &e)
     {
         std::cerr << e.what() << std::endl;
     }
-    std::cout << "bazinga" << std::endl;
     return 0;
 }

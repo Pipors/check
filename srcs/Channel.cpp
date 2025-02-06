@@ -60,21 +60,9 @@ std::string Channel::getChannelClientByName()
 	return names;
 }
 
-std::string Channel::getCurrentTimestamp() 
+int Channel::getCurrentTimestamp() 
 {
-    // Get the current time
-    std::time_t now = std::time(nullptr);
-    
-    // Convert time_t to tm struct for local time
-    std::tm* localTime = std::localtime(&now);
-    
-    // Create a buffer for the formatted timestamp
-    char buffer[20];
-    
-    // Format the timestamp into the buffer
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localTime);
-    
-    return std::string(buffer);
+    return static_cast<int>(std::time(nullptr)); 
 }
 
 
@@ -214,11 +202,6 @@ void Channel::setTopic(const std::string & _topic)
 	this->topic = _topic;
 }
 
-// void Channel::addClientToVector(Client client)
-// {
-// 	this->getChannelClientsVector()->push_back(client);
-// }
-
 void Channel::setHasLimit(const size_t& val)
 {
 	this->hasLimit = val;
@@ -227,22 +210,6 @@ bool Channel::getHasLimit() const
 {
 	return this->hasLimit;
 }
-
-
-
-// bool Channel::getNumberOfModerator() const
-// {
-// 	size_t it = 0;
-// 	int count  = 0;
-// 	while (it != channelClients.size())
-// 	{
-// 		if (channelClients[it].isModerator())
-// 			count++;
-// 		it++;
-// 	}
-// 	return ((count > 1) ? true : false);
-// }
-
 
 std::string Channel::getChannelMode() const
 {

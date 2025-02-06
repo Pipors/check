@@ -48,6 +48,54 @@ void Server::setServerSock(int port)
 	this->monitor.push_back(serverPoll);
 }
 
+void Server::facts(const int &cs)
+{
+	std::srand(std::time(NULL));
+	int choice = (rand() % 20) + 1;
+	if(choice == 1)
+		command.sendData(cs, "Bananas are berries, but strawberries aren't.\n");
+	else if(choice == 2)
+		command.sendData(cs, "Octopuses have three hearts.\n");
+	else if(choice == 3)
+		command.sendData(cs, "Wombat poop is cube-shaped.\n");
+	else if(choice == 4)
+		command.sendData(cs, "Sharks existed before trees.\n");
+	else if(choice == 5)
+		command.sendData(cs, "The Eiffel Tower can grow taller in summer.\n");
+	else if(choice == 6)
+		command.sendData(cs, "Honey never spoils.\n");
+	else if(choice == 7)
+		command.sendData(cs, "Water can boil and freeze at the same time.\n");
+	else if(choice == 8)
+		command.sendData(cs, "A day on Venus is longer than a year on Venus.\n");
+	else if(choice == 9)
+		command.sendData(cs, "The human body glows in the dark.\n");
+	else if(choice == 10)
+		command.sendData(cs, "There's a species of jellyfish that can live forever.\n");
+	else if(choice == 11)
+		command.sendData(cs, "You can hear a blue whaleâ€™s heartbeat from 2 miles away.\n");
+	else if(choice == 12)
+		command.sendData(cs, "There's a gas cloud in space that smells like rum and tastes like raspberries.\n");
+	else if(choice == 13)
+		command.sendData(cs, "Butterflies can taste with their feet.\n");
+	else if(choice == 14)
+		command.sendData(cs, "Some turtles can breathe through their butts.\n");
+	else if(choice == 15)
+		command.sendData(cs, "The entire worldâ€™s population could fit in Los Angeles.\n");
+	else if(choice == 16)
+		command.sendData(cs, "There's an island within a lake, on an island, in a lake, on an island.\n");
+	else if(choice == 17)
+		command.sendData(cs, "Sloths can hold their breath longer than dolphins.\n");
+	else if(choice == 18)
+		command.sendData(cs, "Scotland has 421 words for snow.\n");
+	else if(choice == 19)
+		command.sendData(cs, "Earth once had two moons.\n");
+	else if(choice == 20)
+		command.sendData(cs, "The shortest war in history lasted only 38 minutes.\n");
+	else 
+		command.sendData(cs, "Invalid choice! Please enter a number between 1 and 20.\n");
+	return ;
+}
 
 /* Accepting the incoming connection from the clients */
 void Server::acceptNewConnection()
@@ -82,11 +130,12 @@ void Server::runningServer(int port, const char *av)
 	this->setServerSock(port);
 	this->setServerPassWd(av);
 
-	while(true)
+	while(Server::running == true)
 	{
 
+
 		if (poll(&(monitor[0]), monitor.size(), 0) == -1)
-			this->throwError("poll failed\n", 0);
+			this->throwError("poll failed", 0);
 
 		for (size_t i = 0; i < monitor.size(); i++)
 		{
@@ -116,18 +165,19 @@ void Server::runningServer(int port, const char *av)
 /* Reading msg from client */
 void Server::recieveData(int clientSock)
 {
-	//Client &client;
 	char message[1024];
 	int rbyte = recv(clientSock, message, sizeof(message) - 1, 0);
-	if (rbyte < 0)
+	if (rbyte <= 0)
 	{
+		command.removeClientFromAllChannels(clientSock);
 		close(clientSock);
 		std::cout << "Client {" << clientSock - 3 << "}" << " has been Disconnected." << std::endl;
 		return;
 	}
 	message[rbyte] = '\0';
 	Client *client = this->getClientFromVectorByFd(clientSock); // Pointing to the client who sent the message in the vector
-	processCommand(client, message);
+		processCommand(client, message);
+
 }
 
 /* Sending msg to client */
@@ -159,7 +209,7 @@ void Server::signalHandler(int sig)
 	(void)sig;
     std::cout << std::endl << "Received SIGUSR1 signal!" << std::endl;
     Server::running = false;
-}
+	exit(1);}
 
 
 void Server::removeClientFromServer(int clientSock)
@@ -285,24 +335,6 @@ std::string Server::getRangeAsString(const std::vector<std::string>& vec, std::v
 	return result;
 }
 
-
-// std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter) 
-// {
-// 	if (start > vec.size() || end > vec.size() || start > end) 
-// 		throw std::out_of_range("Invalid range specified.");
-// 	// Extract range and concatenate strings
-// 	std::string result = "";
-// 	std::vector<std::string>::iterator it = vec.begin() + start;
-// 	while (it != vec.begin() + end) 
-// 	{
-// 		if (!result.empty()) 
-// 			result += delimiter; // Add a space between words
-// 		result += *it;
-// 		it++;
-// 	}
-// 	return result;
-// }
-
 Client *Server::getClientFromServer(const std::string& nickname)
 {
 	size_t i = 0;
@@ -375,3 +407,93 @@ bool Server::nickNameInUse(Client *client, const std::string& name)
 	}
 	return false;
 }
+
+
+void Server::ageCalculator(std::string d, std::string m, std::string y, const int &cs)
+{
+	int day = std::atoi(d.c_str());
+	int month = std::atoi(m.c_str());
+	int year = std::atoi(y.c_str());
+    // std::cout << "Enter your birthdate (day month year): ";
+    // std::cin >> day >> month >> year;
+	if(year > 2025 || year < 0 || month < 1 || month > 12 || day < 1 || day > 31)
+	{
+		command.sendData(cs, "error");
+		return ;
+	}
+	else 
+	{
+		if(month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12)
+		{
+			if(day > 31 ||  day < 1)
+			{
+				command.sendData(cs, "error");
+				return ;
+			}
+		}
+		else if(month == 4 || month == 6 || month == 9 || month == 11)
+		{
+			if(day > 30 || day < 1)
+			{
+				command.sendData(cs, "error");
+				return ;
+			}
+		}
+		else
+		{
+			if(year % 4 == 0)
+			{
+				if(month > 29)
+				{
+					command.sendData(cs, "error");
+					return ;
+				}
+			}
+			else 
+			{
+				if(month > 28)
+				{
+					command.sendData(cs, "error");
+					return ;
+				}
+			}
+		} 
+	}
+    // Get the current time
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+    // std::tm* now_tm = std::localtime(&current_time);
+
+    // Set the birthday date (assuming 00:01 AM of the given day)
+    std::tm birth_tm = {};
+    birth_tm.tm_year = year - 1900; // tm_year is years since 1900
+    birth_tm.tm_mon = month - 1;    // tm_mon is months since January (0-11)
+    birth_tm.tm_mday = day;
+    birth_tm.tm_hour = 0;           // Midnight time
+    birth_tm.tm_min = 1;            // 00:01 AM
+
+    // Convert to time_t (seconds since epoch)
+    std::time_t birth_time = std::mktime(&birth_tm);
+
+    // Calculate the difference in seconds
+    double seconds = std::difftime(current_time, birth_time);
+
+    // Calculate age in different units
+    long long age_seconds = static_cast<long long>(seconds);
+    long long age_minutes = age_seconds / 60;
+    long long age_hours = age_minutes / 60;
+    long long age_days = age_hours / 24;
+    long long age_weeks = age_days / 7;
+    long long age_months = age_days / 30;  // Approximating 30 days per month
+
+ std::string result = "Your age is:\n";
+    result += "In seconds: " + std::to_string(age_seconds) + " secs\n";
+    result += "In minutes: " + std::to_string(age_minutes) + " mins\n";
+    result += "In hours: " + std::to_string(age_hours) + " hours\n";
+    result += "In days: " + std::to_string(age_days) + " days\n";
+    result += "In weeks: " + std::to_string(age_weeks) + " weeks\n";
+    result += "In months: " + std::to_string(age_months) + " months\n";
+    // Print the results
+	command.sendData(cs,  result);
+}
+

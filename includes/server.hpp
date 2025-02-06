@@ -1,11 +1,14 @@
 #pragma once
 
+
+#include <csignal>
+#include <iostream>
+
+
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
-// #include <sys/type.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <stdint.h>
 #include <vector>
 #include <cerrno>
@@ -19,6 +22,8 @@
 #include <fcntl.h>
 #include "Channel.hpp"
 #include "Replies.hpp"
+#include <string>
+
 
 #define RPL_NICKCHANGE(oldnickname, nickname) (":" + oldnickname + " NICK " + nickname + CRLF)
 
@@ -35,22 +40,21 @@ public :
 	void acceptNewConnection();
 	void runningServer(int port, const char *av);
 	void processCommand(Client *, const char* message);
+	void ageCalculator(std::string d, std::string m, std::string y, const int &cs);
 
 	bool equalStrings(const std::string& it, const std::string& compare);
 	bool nickNameInUse(Client *, const std::string&);
 	/* FUCNTIONS HANDLING SENDING AND RECIEVING MSG */
 	void recieveData(int clienSock);
-	void parseCommand(int newsocket);
 	void removeClientFromServer(int clientSock);
 
 	/* UTILS */
-	void removeClientFromChannel(Client *client, const std::string& name, const std::string& toremove);
 
 	static void signalHandler(int sig);
 	void throwError(const char* msg, int fd);
-	// void removeClientFromServer(int clientsock);
 	void removeClientFromPollfd(int clientsock);
 	void closeFd();
+	void facts(const int & cs);
 
 	
 	/* SETTERS */
@@ -64,12 +68,10 @@ public :
 	std::string 	getPasswd() const;
 	std::string 	getName() const;
 	std::string		getRangeAsString(const std::vector<std::string>&, std::vector<std::string>::iterator,  size_t, std::string);
-	// std::string getRangeAsString(std::vector<std::string> vec, size_t start, size_t end, std::string delimiter);
-
 
 	std::vector<std::string>	getWords_(const std::string &);
 	std::vector<struct pollfd>	getMonitor() const;
-	
+
 	Client	*getClientFromServer(const std::string&);
 	Client	*getClientFromVectorByFd(int);
 	Client	*getServerClient(const std::string &);

@@ -3,7 +3,7 @@
 
 #include "Client.hpp"
 #include <unordered_map>
-// #include "Server.hpp"
+#include <ctime>
 
 
 
@@ -29,7 +29,6 @@ public :
 	void addModerator(const Client*);
 	void removeModerator(const Client *client);
 	void printOp();
-	// void printClient();
 
 	bool userExistInChannelBySock(const int&);
 	bool checkClientIsModerator(const int&);
@@ -38,7 +37,6 @@ public :
 	bool getInviteMode() const;
 	bool channelInviteModeOnly();
 	bool getPasswdRequired() const;
-				// command.getChannelByName(*(it + 1))->addClientToVector(invitedClient);
 	bool getTopicMode() const;
 	bool getNumberOfModerator() const;
 	bool getHasLimit() const;
@@ -46,7 +44,7 @@ public :
 	std::string getChannelName() const;
 	std::string getChannelClientByName();
 	std::string getPasswd() const;
-	std::string getCurrentTimestamp();
+	int getCurrentTimestamp();
 	std::string getChannelMode() const;
 	std::string getTopic()const ;
 
